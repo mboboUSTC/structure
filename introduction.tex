@@ -1,0 +1,46 @@
+\section{Introduction}
+In this paper, we propose a framework, that can automatically generate accurate shape descriptions of each vesicle from raw electron cryo-tomography.
+Our method is much more accurate and efficient than traditional methods, also with the consideration of missing wedge problem.
+The key idea of our method is to apply template matching algorithm on the segmentation data, rather than the raw electron cryo-tomography [].
+As we know, electron cryo-tomography is very noisy with low signal-to-noise ratio (SNR), thus the unsupervised matching algorithm will be confused by the noisy texture and give inaccurate templates.
+Besides, since there is no prior knowledge about the vesicle positions, the similarity of each template with all voxels have to be calculate, which costs huge amount of computation and time in spite of many acceleration algorithms [].
+Based on these considerations, we propose to apply template matching algorithm on the segmentation volume of cryo-tomography, which is more clean with available vesicle positions.
+In this way, only the similarity between templates and few voxels should be calculated, which is less disturbed by noisy texture.
+Finally, our main problem becomes how to obtain the accurate segmentation of a raw electron cryo-tomography.
+
+Recently, fully convolution network (FCN) \cite{Shelhamer2014Fully} have shown great program in many biomedical segmentation tasks \cite{Cicek2016,Chen2017,Yu2017,Chen2017a}.
+It removes the fully connection layers and applies upsampling or deconvolution layers to restore the results to the input size, which give superior performance than traditional methods.
+The main advantages of FCN contains: a) high robustness to noise, b) high speed, and c) extracting high-level feature.
+Due to these characteristics, we utilize the FCN model to extract high-level information to distinguish vesicle objects from other cell-organs in raw cellular environment.
+Especially, we use the 2D FCN to segment each slice image of cryo-tomography along the shortest $z$-axis, and then stack the obtained masks.
+Compared with 3D FCN with 3D input volume, 2D FCN has a lager reception field on $x-y$ plane, and low demand on computation resource.
+Although the complementary information along $z$-axis is ignored by 2D FCN, it guarantees the performance of 2D shape of each vesicle, and our post processing algorithm will supplement the $z$-axis information.
+
+The FCN have the powerful ability of extracting high-level features of localizing object regions, but the contours are usually coarse and poor due to the successive pooling layers, losing much detail information \cite{Chen2017}.
+To this end, we propose two optimization strategies, respectively utilizing local context information and global continuity along $z$-th axis.
+For our local optimization algorithm, a novel updating strategy is proposed for snake model, which is more robust to the noisy cryo-tomography.
+Especially, snake model evolves the vesicle contours from FCN to attach to the vesicle membrane using our updating algorithm, based on the local texture.
+For our global optimization algorithm, the missing detected vesicles by FCN will be repaired by associating all vesicle regions belonging to the same vesicle.
+When two regions in discontinuous slices are from the same vesicle, the similar regions in middle slices should also belong to that vesicle.
+Therefore, we propose a global association algorithm to label vesicle regions segmented by FCN, and repair the missing detections.
+With our local and global optimizations, the segmentation becomes accurate enough for template matching.
+
+Finally, the template matching algorithm is directly applied to the segmentation result of cryo-tomography.
+Especially, the missing wedge problem is tackled in this step.
+First, large number of ellipsoid templates with corresponding distorted shape are generated, which should cover all kinds of vesicle shapes.
+Especially, the distorted ellipsoids should have the same missing wedge problem with cryo-tomography.
+Then, the similarity between obtained vesicle shapes and distorted template ellipsoids are calculated, while the most similar distorted template will be output.
+Finally, the shape parameters of the corresponding undistorted template are obtained as our final results.
+
+Our contributions are summarized as follows:
+\begin{itemize}
+\item we propose a fast and accurate framework that can automatically generate accurate shape descriptions of each vesicle from raw electron cryo-tomography, with the consideration of missing wedge problem.
+
+\item Instead of template matching on raw cryo-tomography, we provide a new strategy by combining image segmentation and template matching technologies, with the help of deep learning. In other word, we take both advantages of supervised deep learning and unsupervised template matching methods, which are usually complementary.
+
+\item In order to improve the segmentation results from FCN, two kinds of optimization strategies are proposed, by respectively refining the 2D contours accuracy and missing detection problem by FCN. As a results, accurate segmentation boosts the performance of template matching.
+
+\end{itemize}
+
+
+
